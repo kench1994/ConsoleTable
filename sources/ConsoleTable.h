@@ -52,13 +52,12 @@ namespace utils
 			return view::colors::default;
 		}
 
-		//输入列数据
-		inline unsigned int col_width(const model::TableDts& table, unsigned int uColIndex, bool bWithPadding = true)
+		//输入表和列号,计算出相应列中值最大的长度
+		inline unsigned int col_width(const model::TableDts& table, unsigned int uColIndex)
 		{
 			unsigned int uWidth = 0;
 			for (const auto& spRow : table.vContents)
-				uWidth = std::max(spRow->at(uColIndex).length(), uWidth);
-			
+				uWidth = (std::max)(spRow->at(uColIndex).length(), uWidth);
 			return uWidth;
 		}
 
@@ -69,98 +68,49 @@ namespace utils
 
     namespace view
     {
+        constexpr unsigned int uCellValPaddingBefore = 1, uCellValPaddingAfter = 2;
 		std::string TableView(const model::TableDts& d)
 		{
 			if (1 == d.vContents.size() && !d.vContents.front())
 				return "";
-			
-			//col1 列宽的 棱角
-			//col2 ...
-			std::vector<unsigned int> vWidthWithPadding;
-			unsigned int idx = 0;
-			for (const auto& itHeaderCell : *d.vContents.front())
-			{
-				vWidthWithPadding.push_back(control::col_width(d, idx));
-				idx++;
-			}
-			for (const auto& iter : vWidthWithPadding)
-			{
-				for(auto i = 0; i < iter; i++)
-					printf("%c", '-');
-			}
-			printf("\n");
 
+            //计算显示需要预留的空间
+			size_t szTableDraSpace = 0;
+			std::vector<unsigned int> vWidthPerCol;
+			unsigned int uColIdx = 0;
+            const auto& spHeaderRow = d.vContents.front();
+			for (const auto& itHeaderCell : *spHeaderRow)
+			{
+                auto uColWidth = control::col_width(d, uColIdx);
+				vWidthPerCol.push_back(uColWidth);
+				uColIdx++;
+                //前后padding + val_len + 切割符或\n
+                szTableDraSpace += (\
+                  uColWidth + \
+                  uCellValPaddingBefore + uCellValPaddingAfter +\
+                  1);
+			}
+            //乘以行数
+            szTableDraSpace *= d.vContents.size();
+			auto pszTableDrawSpace = new char[szTableDraSpace];
+            memset(pszTableDrawSpace, ' ', szTableDraSpace);
+
+            auto pszRealDraw = pszTableDrawSpace;
 			//开始画表
 			for (const auto& spRow : d.vContents)
 			{
+                uColIdx = 0;
 				for (const auto& itCell : *spRow)
 				{
-					printf("%s", itCell.c_str());
-
-					//todo
-					//画padding
+					strncpy(pszRealDraw + uCellValPaddingBefore, itCell.c_str(), itCell.size());
+					pszRealDraw += vWidthPerCol[uColIdx];
+					strncpy(pszRealDraw, ++uColIdx != spRow->size() ? "|" : "\n", 1);
+					pszRealDraw += 1;
 				}
-				printf("\n");
 			}
+            std::string strResult(pszTableDrawSpace, szTableDraSpace);
+            delete []pszTableDrawSpace;
+            return strResult;
 		}
-        // enum class colors : unsigned int{
-        //     reset = 0x00,
-        //     clear = 0x00
-        // };
-
-        // enum class position : unsigned int{
-        //     middle,
-        //     //角块
-        //     angle-l,
-        //     angle-r,
-        //     //棱块
-        //     edge
-        // };
-
-        // //单元格抽象
-        // typedef struct tagTableCell{
-        //     tagTableCell() : spWidth(nullptr){}
-        //     std::string strVal;
-        //     position enPosition;
-        //     std::shared_ptr<unsigned int> spWidth;
-        // }TableCell;
-
-        // using Row_t = std::vector<shared_ptr<TableCell>>;
-        // //绘图时对于每一行会先自动填充上棱
-        // class ConsoleTable{
-        //     protected:
-
-
-        
-        //     public:
-        //         ConsoleTable(){}
-        //         ~ConsoleTable(){}
-
-        //         void set_header(const std::vector<std::string>& vLineDts)
-        //         {
-                    
-        //         }
-
-        //         void add_row(const std::vector<std::string>& vLineDts)
-        //         {
-        //             std::size_t idx = 1;
-        //             for(const auto& iter = vLineDts.begin(); iter != vLineDts.end(); ++iter, ++idx)
-        //             {
-        //                 auto spCell = std::make_shared<TableCell>();
-        //                 spCell->strVal = iter;
-        //                 if(1 == idx)
-        //                     spCell->position = position::angle-l;
-        //                 else if(idx == vLineDts.size())
-        //                     spCell->position = position::angle-r;
-        //                 else
-        //                     spCell->position = position::middle;
-                        
-                        
-        //             }
-        //         }
-
-        //     private:
-        //         std::vector<shared_ptr<Row_t>> m_vContents;
-        //}
     }
 }
