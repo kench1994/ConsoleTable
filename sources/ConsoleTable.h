@@ -100,6 +100,7 @@ namespace utils
     {
 		constexpr const char* NEW_LINE = "\n", *FIELD_SEP = "|";
         constexpr unsigned int uCellValPaddingBefore = 1, uCellValPaddingAfter = 2;
+		//TODO:add 行列序号选项
 		std::string TableView(const model::TableDts& d)
 		{
 			if (1 == d.vContents.size() && !d.vContents.front())
@@ -138,11 +139,6 @@ namespace utils
 					if(0 == uRowId)
 					{
 						pszRealDraw += sprintf(pszRealDraw, " \x1B[94m%s\033[0m  ", itCell.c_str());
-
-						// strncpy(pszRealDraw + uCellValPaddingBefore, "\x1B[94m", strlen("\x1B[36m"));
-						// strncpy(pszRealDraw + uCellValPaddingBefore + strlen("\x1B[94m"), itCell.c_str(), itCell.size());
-						// strncpy(pszRealDraw + strlen("\x1B[94m") + vWidthPerCol[uColIdx], "\033[0m", strlen("\033[0m"));
-						// pszRealDraw += (vWidthPerCol[uColIdx] + uCellValPaddingBefore + uCellValPaddingAfter + 9);
 					}
 					else
 					{
