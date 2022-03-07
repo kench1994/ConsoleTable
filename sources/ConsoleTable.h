@@ -103,7 +103,7 @@ namespace utils
 				for (const auto& itCell : *spRow)
 				{
 					strncpy(pszRealDraw + uCellValPaddingBefore, itCell.c_str(), itCell.size());
-					pszRealDraw += vWidthPerCol[uColIdx];
+					pszRealDraw += (vWidthPerCol[uColIdx] + uCellValPaddingBefore + uCellValPaddingAfter);
 					strncpy(pszRealDraw, ++uColIdx != spRow->size() ? "|" : "\n", 1);
 					pszRealDraw += 1;
 				}
